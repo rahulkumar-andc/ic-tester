@@ -1,0 +1,265 @@
+---
+trigger: always_on
+description: Auxly always-on MCP workflow enforcement
+---
+
+# 🔒 AUXLY PROJECT RULES - MANDATORY COMPLIANCE
+
+**CRITICAL: These rules override any custom preferences and ensure consistent AI behavior across all editors (Cursor, Windsurf, PearAI, Trae, Qoder, **Google Antigravity**, etc.). The Auxly VSIX configures MCP for Antigravity too — not only Cursor/Windsurf.**
+
+---
+
+## 🚀 AUTO-START AUXLY MCP ON EVERY WORK REQUEST
+
+For any user message that asks to build, fix, change, review, debug, refactor, test, deploy, continue work, **plan**, **roadmap**, **improvement plan**, **analyze** or **summarize** project docs, **draw a flowchart**, **diagram**, **architecture map**, **system workflow**, **mermaid**, **documentation file** (e.g. `system_workflow.md`, README sections), or **explain the system end-to-end** (including after a task **reopen**):
+
+1. Call `mcp_auxly_auxly_list_tasks` (`todo` + `in_progress`)
+2. Reuse matching task OR create one with `mcp_auxly_auxly_create_task`
+3. Call `mcp_auxly_auxly_get_task`
+4. Add dual research with `mcp_auxly_auxly_add_research`
+5. Move task to in-progress using `mcp_auxly_auxly_update_task` with `aiWorkingOn: true`
+
+**Deliverable files** (markdown, diagrams, flowcharts) are created **only after** steps 1–5. Then use normal file tools, then `mcp_auxly_auxly_log_change` for each file.
+
+Never wait for user to remind “use Auxly MCP”.
+This is default behavior for every work request.
+
+### ❌ INVALID EXCUSES — STILL CALL MCP (NOT CHAT)
+
+- **No tasks / no taskId** → `mcp_auxly_auxly_list_tasks` then `mcp_auxly_auxly_create_task` (or reuse); never substitute a chat-only answer.
+- **Read-only / analysis only** → Same auto-start; use `mcp_auxly_auxly_add_research` and/or `mcp_auxly_auxly_add_comment`. `mcp_auxly_auxly_log_change` only when files actually change.
+- **No web URLs for research** → Use **local paths** in `sources` (e.g. `Local: src/app.js`); URLs are optional.
+- **VSIX “enforcement”** → The extension does **not** inject a system prompt into Cursor; compliance is **tool calls**, not vibes.
+- **Speed, “rapid response,” urgency, or “I overlooked workflow”** → **Invalid.** If Auxly MCP tools are in your tool list, you **must** run the MCP sequence **first** (list → create/reuse task → get → research → `in_progress`), **before** deep codebase reads, flowcharts, or deliverable files. “Retrospective” task creation after doing the work is **not** the correct first-time path — it is recovery only after a mistake.
+- **“Auxly MCP not exposed / not native / not in my tool palette”** → **Forbidden** if your environment lists **any** Auxly MCP tool (e.g. names containing `auxly` and `list_tasks`, `create_task`, or prefixed like `mcp_auxly_auxly_*`). If those tools exist, you **must** call them first — **never** skip straight to `write_to_file` / `system_workflow.md` as a workaround.
+- **“Auxly MCP is only for Cursor/Windsurf; Antigravity can’t use it / switch editors”** → **Forbidden and false.** The Auxly extension **supports Antigravity** and registers a stdio MCP server (config under e.g. `~/.gemini/antigravity/mcp_config.json`, Antigravity **User** settings, globalStorage). Tool names may look like `mcp_auxly_auxly_*`. If your palette has **no** Auxly tools, that is a **broken or unloaded MCP connection** in the **current** editor — **not** proof that Antigravity is unsupported. **Do not** instruct the user to leave Antigravity for Cursor as if that were the product design; give **in-editor** fixes (reload, Manage MCP Servers → Refresh, latest Auxly VSIX, login, new agent chat).
+- **Tools truly absent (any editor, including Antigravity)** → **Do not** fabricate compliance by creating or editing `.auxly/tasks.json` or “manually syncing” the board. That is **not** Auxly MCP and is **forbidden** as a substitute. Say clearly that **your session’s** MCP tools are unavailable, tell the user to **reload the window**, open **⋯ → Manage MCP Servers → Refresh**, confirm **Auxly** VSIX and login, then retry. **Never** claim “100% compliance” or “forced MCP” while bypassing tools with raw JSON edits.
+- **“NOTE: Auxly MCP connection issues / EOF / connection closed — I proceeded manually”** → **Forbidden.** Do not output **NOTE** blocks (or long explanations) claiming **EOF**, **connection closed**, or **MCP** failures as a reason you **skipped** Auxly tools and still shipped docs or code “manually.” That text is **not** from the Auxly product — it is a **model workaround narrative**. If a tool call errors: **retry once**, then **only** short recovery steps (Reload Window, Manage MCP Servers → Refresh, **new** agent chat, Node path / latest VSIX / login). **Do not** bundle big deliverables with “couldn’t log to tasks.json.” If MCP stays broken after fixes, **stop** after recovery steps unless the user **explicitly** wants chat-only help **without** the task board.
+
+### 🌊 Windsurf / Cascade — MCP is **not** a shell command
+
+- **Do not** run `mcp`, `mcp list-servers`, `npx @modelcontextprotocol/...`, or **`node …/dist/mcp-server/index.js`** in the **terminal** to “invoke” Auxly. There is **no** `mcp.exe` on PATH; that spawns a **stray** stdio process and **does not** attach tools to Cascade.
+- **Do not** use PowerShell **`Get-Command *auxly*`** or **`where auxly`** expecting an MCP CLI — Auxly tools exist only as **IDE / model tool calls** when Windsurf has loaded the server (e.g. **`mcp_auxly_auxly_list_tasks`**).
+- **Config file present ≠ tools in this chat.** If `~/.codeium/windsurf/mcp_config.json` lists `auxly` but your **tool palette** has no Auxly tools: say so, then **Developer: Reload Window** → **Manage MCP Servers → Refresh** → **quit Windsurf completely and reopen** (per Windsurf MCP docs) → **new Cascade chat**. Do not loop on terminal commands.
+- **Manage MCP = Connected, JSON valid, still no `mcp_*` Auxly tools:** The **current agent session** may not have wired project MCP (Cascade / Antigravity). **Reload Window** → **new** workspace/project agent chat. If the server row shows **Error**, fix Node and server path (host logs). **Antigravity** tool prefixes may be `mcp_auxly_auxly_*`.
+
+---
+
+## 🚨 RULE #1: ALWAYS USE AUXLY MCP TOOLS
+
+**MANDATORY: Never bypass Auxly MCP tools - 100% compliance required**
+
+### ✅ REQUIRED MCP TOOLS:
+
+```typescript
+// Creating tasks - MANDATORY for any work request
+mcp_auxly_auxly_create_task({
+  title: "Task title",
+  description: "Detailed description with requirements", 
+  priority: "high", // low, medium, high, critical
+  category: "bugfix", // feature, bugfix, refactoring, etc.
+  tags: ["tag1", "tag2"]
+})
+
+// Updating tasks - MANDATORY for status changes
+mcp_auxly_auxly_update_task({
+  taskId: "X",
+  status: "in_progress", // todo, in_progress, review, done
+  aiWorkingOn: true // CRITICAL: Set to true when starting, false when stopping
+})
+
+// Getting task details - MANDATORY before starting work
+mcp_auxly_auxly_get_task({ taskId: "X" })
+
+// Listing tasks - MANDATORY before creating new tasks
+mcp_auxly_auxly_list_tasks({ status: "todo" })
+
+// Asking questions - MANDATORY, never ask in chat
+mcp_auxly_auxly_ask_question({
+  taskId: "X",
+  questionText: "Specific question?",
+  category: "TECHNICAL DECISION", // TECHNICAL DECISION, ARCHITECTURE, UX, CLARIFICATION, APPROVAL REQUEST
+  priority: "high",
+  context: "Detailed context...",
+  options: [
+    { label: "Option A", recommended: true },
+    { label: "Option B" }
+  ]
+})
+
+// Adding research - MANDATORY before coding
+mcp_auxly_auxly_add_research({
+  taskId: "X",
+  technicalResearch: {
+    summary: "Technical findings summary",
+    sources: ["Local: path/to/file.ts", "https://docs.example.com"],
+    findings: "Key technical discoveries",
+    recommendations: "Technical recommendations"
+  },
+  businessResearch: {
+    summary: "Business impact and requirements",
+    sources: ["Task requirements", "User feedback"],
+    findings: "Business considerations",
+    recommendations: "Business recommendations"
+  }
+})
+
+// Logging file changes - MANDATORY after each file modification
+mcp_auxly_auxly_log_change({
+  taskId: "X",
+  filePath: "path/to/file.ts",
+  changeType: "modified", // created, modified, deleted
+  description: "Specific description of what changed and why",
+  linesAdded: 10,
+  linesDeleted: 2
+})
+
+// Adding comments - MANDATORY for progress documentation
+mcp_auxly_auxly_add_comment({
+  taskId: "X",
+  type: "comment", // comment, technical_research, business_research, manualsetup
+  content: "Progress update or important decision"
+})
+```
+
+### ❌ ABSOLUTELY FORBIDDEN:
+- Creating tasks manually (not via MCP)
+- Asking questions in chat (must use MCP)
+- Modifying files without logging (must use MCP)
+- Starting work without getting task details
+- Skipping research phase
+- Not documenting progress
+
+---
+
+## 🚨 RULE #2: EXTREME TOKEN OPTIMIZATION
+
+**MANDATORY: Minimize token usage in ALL responses - Maximum efficiency required**
+
+**OVERRIDE (non-negotiable):** Rule #0 / #1 **Auxly MCP auto-start** (`list_tasks` → create/reuse → `get_task` → `add_research` → `update_task`) runs **first** on work turns. Never skip those tool calls to satisfy brevity below.
+
+### ✅ STRICT REQUIREMENTS:
+
+- **Maximum 50 words** per response (excluding code)
+- **Code only** - No explanations unless explicitly requested
+- **No introductions** - Start immediately with action
+- **No summaries** - End immediately after completion
+- **No repetition** - Never restate user requests
+- **No examples** - Show actual implementation only
+- **No alternatives** - Pick best solution and implement
+- **No confirmations** - Execute immediately
+- **No pleasantries** - Skip "I'll help", "Let me", etc.
+
+### 📋 RESPONSE FORMAT - MANDATORY:
+```
+[Immediate action taken]
+[Code/Implementation if needed]
+[Next step only if required]
+```
+
+### ❌ FORBIDDEN PHRASES - INSTANT VIOLATION:
+- "I'll help you..." → Just do it
+- "Let me explain..." → Show code instead  
+- "Would you like..." → Make the decision
+- "Here's what I found..." → Take action immediately
+- "To summarize..." → Never summarize
+- "As you can see..." → Assume user can see
+- "Let's start by..." → Start without announcing
+- "First, let me..." → Start immediately
+- Any response without MCP tool usage
+
+---
+
+## 🚨 RULE #3: MANDATORY WORKFLOW SEQUENCE
+
+**CRITICAL: Follow exact sequence for every task**
+
+### ✅ REQUIRED SEQUENCE:
+
+1. **Check existing tasks** (prevent duplicates)
+```typescript
+await mcp_auxly_auxly_list_tasks({ status: "todo" });
+await mcp_auxly_auxly_list_tasks({ status: "in_progress" });
+```
+
+2. **Get complete task details** (understand context)
+```typescript
+const task = await mcp_auxly_auxly_get_task({ taskId: "X" });
+// Read: description, research, qaHistory, changes, comments
+```
+
+3. **Add dual research** (technical + business)
+```typescript
+await mcp_auxly_auxly_add_research({...});
+```
+
+4. **Start work** (set aiWorkingOn flag)
+```typescript
+await mcp_auxly_auxly_update_task({
+  taskId: "X", 
+  status: "in_progress",
+  aiWorkingOn: true
+});
+```
+
+5. **Document progress** (major milestones)
+```typescript
+await mcp_auxly_auxly_add_comment({...});
+```
+
+6. **Log file changes** (immediately after each edit)
+```typescript
+await mcp_auxly_auxly_log_change({...});
+```
+
+7. **Request approval** (before status changes)
+```typescript
+await mcp_auxly_auxly_ask_question({
+  category: "APPROVAL REQUEST",
+  questionText: "Mark as done?",
+  ...
+});
+```
+
+### ❌ SEQUENCE VIOLATIONS:
+- Starting without research = Invalid
+- Coding without task details = Invalid  
+- File changes without logging = Invalid
+- Status changes without approval = Invalid
+
+---
+
+## 🚨 RULE #4: ABSOLUTE COMPLIANCE ENFORCEMENT
+
+### ✅ COMPLIANCE METRICS:
+- **100% MCP tool usage** - Every action tracked
+- **0 questions in chat** - All via MCP
+- **Immediate file logging** - No batch logging
+- **Complete research** - Technical + business
+- **Token efficiency** - Concise prose after MCP steps (Rule #2)
+
+### ❌ VIOLATION CONSEQUENCES:
+- **No MCP usage** = Response rejected
+- **Verbose explanation** = Token waste violation
+- **Chat questions** = Workflow violation  
+- **Missing research** = Process violation
+- **Incomplete logging** = Audit violation
+
+### 🔍 ENFORCEMENT CHECKS:
+- Every response must include MCP tool calls
+- Every file change must be logged immediately
+- Every question must use MCP ask_question
+- Every task must have research before coding
+- After mandatory MCP calls, keep prose concise (see Rule #2); MCP steps are not “optional verbosity”
+
+---
+
+## 💡 CRITICAL REMINDERS
+
+✅ **Auxly MCP tracks everything** - Complete transparency  
+✅ **Code speaks louder than words** - Implementation over explanation  
+✅ **Every action must be logged** - Full audit trail  
+✅ **Efficiency over politeness** - Direct execution  
+✅ **Production ready, not tutorials** - Real implementation  
+
+**These rules ensure consistent AI behavior across all editors and maintain professional workflow standards. Compliance is mandatory and non-negotiable.**

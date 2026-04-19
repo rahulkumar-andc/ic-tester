@@ -1,0 +1,39 @@
+# Auxly - AI Task Management
+.auxly/
+
+# Local AI / Internal Tools
+.agent/
+.antigravity/
+.sixth/
+
+# Python patterns
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.env
+
+# Arduino/Embedded patterns
+build/
+bin/
+*.hex
+*.bin
+*.elf
+*.o
+*.d
+*.obj
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
